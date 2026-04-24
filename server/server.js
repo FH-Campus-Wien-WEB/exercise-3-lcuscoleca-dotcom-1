@@ -11,48 +11,77 @@ app.use(bodyParser.json());
 // Serve static content in directory 'files'
 app.use(express.static(path.join(__dirname, 'files')));
 
-/* Task 1.2: Add a GET /genres endpoint:
-   This endpoint returns a sorted array of all the genres of the movies
-   that are currently in the movie model.
-*/
-
-/* Task 1.4: Extend the GET /movies endpoint:
-   When a query parameter for a specific genre is given, 
-   return only movies that have the given genre
- */
+// Configure a 'get' endpoint for all movies..
 app.get('/movies', function (req, res) {
-  let movies = Object.values(movieModel)
-  res.send(movies);
+  let moviesArray = Object.values(movieModel);
+  
+  // Filter by genre if query parameter is provided
+  const genre = req.query.genre;
+  if (genre) {
+    moviesArray = moviesArray.filter(function(movie) {
+      return movie.Genres.includes(genre);
+    });
+  }
+  
+  res.json(moviesArray);
 })
+
+// Configure a 'get' endpoint for all genres
+app.get('/genres', function (req, res) {
+  const genresSet = new Set();
+  
+  Object.values(movieModel).forEach(function(movie) {
+    movie.Genres.forEach(function(genre) {
+      genresSet.add(genre);
+    });
+  });
+  
+  const genresArray = Array.from(genresSet).sort();
+  res.json(genresArray);
+})
+
+//endpoint get based on ImdbID 
+app.get('/movies/:imdbID', function (req, res) {
+  const imdbID = req.params.imdbID;
+
+  const movie = movieModel[imdbID];
+
+  if (movie) {
+    res.send(movie);
+  } else {
+    res.sendStatus(404);
+  }
+})
+
+app.put('/movies/:imdbID', function (req, res) {
+  const imdbID = req.params.imdbID;
+  const movieData = req.body;
+
+  const exists = !!movieModel[imdbID];
+
+  movieData.imdbID = imdbID;
+
+  movieModel[imdbID] = movieData;
+
+  if (exists) {
+    return res.sendStatus(200); // Update
+  } else {
+    return res.status(201).send(movieData); // Create
+  }
+});
 
 // Configure a 'get' endpoint for a specific movie
-app.get('/movies/:imdbID', function (req, res) {
-  const id = req.params.imdbID
-  const exists = id in movieModel
- 
-  if (exists) {
-    res.send(movieModel[id])
-  } else {
-    res.sendStatus(404)    
-  }
-})
 
-app.put('/movies/:imdbID', function(req, res) {
+  /* Task 2.1. Remove the line below and add the 
+    functionality here */
 
-  const id = req.params.imdbID
-  const exists = id in movieModel
 
-  movieModel[req.params.imdbID] = req.body;
-  
-  if (!exists) {
-    res.status(201)
-    res.send(req.body)
-  } else {
-    res.sendStatus(200)
-  }
-  
-})
+/* Task 3.1 and 3.2.
+   - Add a new PUT endpoint
+   - Check whether the movie sent by the client already exists 
+     and continue as described in the assignment */
 
 app.listen(3000)
 
 console.log("Server now listening on http://localhost:3000/")
+
