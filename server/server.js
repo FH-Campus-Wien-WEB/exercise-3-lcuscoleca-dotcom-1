@@ -26,7 +26,7 @@ app.get('/movies', function (req, res) {
   res.json(moviesArray);
 })
 
-// Configure a 'get' endpoint for all genres
+// Get endpoint for genres
 app.get('/genres', function (req, res) {
   const genresSet = new Set();
   
@@ -69,17 +69,6 @@ app.put('/movies/:imdbID', function (req, res) {
     return res.status(201).send(movieData); // Create
   }
 });
-
-// Configure a 'get' endpoint for a specific movie
-
-  /* Task 2.1. Remove the line below and add the 
-    functionality here */
-
-
-/* Task 3.1 and 3.2.
-   - Add a new PUT endpoint
-   - Check whether the movie sent by the client already exists 
-     and continue as described in the assignment */
 
 app.listen(3000)
 
